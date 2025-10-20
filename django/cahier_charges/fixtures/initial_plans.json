@@ -1,0 +1,66 @@
+[
+  {
+    "model": "cahier_charges.planabonnement",
+    "pk": 1,
+    "fields": {
+      "nom": "gratuit",
+      "prix_mensuel": "0.00",
+      "prix_annuel": null,
+      "max_cahiers": 3,
+      "pdf_illimite": false,
+      "collaboration": false,
+      "historique_versions": false,
+      "modeles_premium": false,
+      "support_prioritaire": false,
+      "support_premium": false
+    }
+  },
+  {
+    "model": "cahier_charges.planabonnement",
+    "pk": 2,
+    "fields": {
+      "nom": "essentiel",
+      "prix_mensuel": "10.00",
+      "prix_annuel": "100.00",
+      "max_cahiers": 10,
+      "pdf_illimite": true,
+      "collaboration": false,
+      "historique_versions": false,
+      "modeles_premium": true,
+      "support_prioritaire": true,
+      "support_premium": false
+    }
+  },
+  {
+    "model": "cahier_charges.planabonnement",
+    "pk": 3,
+    "fields": {
+      "nom": "pro",
+      "prix_mensuel": "20.00",
+      "prix_annuel": "200.00",
+      "max_cahiers": 0,
+      "pdf_illimite": true,
+      "collaboration": true,
+      "historique_versions": true,
+      "modeles_premium": true,
+      "support_prioritaire": true,
+      "support_premium": true
+    }
+  },
+  {
+    "model": "cahier_charges.planabonnement",
+    "pk": 4,
+    "fields": {
+      "nom": "pro_annuel",
+      "prix_mensuel": "20.00",
+      "prix_annuel": "100.00",
+      "max_cahiers": 0,
+      "pdf_illimite": true,
+      "collaboration": true,
+      "historique_versions": true,
+      "modeles_premium": true,
+      "support_prioritaire": true,
+      "support_premium": true
+    }
+  }
+]

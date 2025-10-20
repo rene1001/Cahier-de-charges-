@@ -1,0 +1,83 @@
+{% extends 'cahier_charges/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans 'Connexion' %}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">{% trans 'Connexion' %}</h2>
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {% trans "Votre nom d'utilisateur et votre mot de passe ne correspondent pas. Veuillez réessayer." %}
+                        </div>
+                    {% endif %}
+
+                    {% if next %}
+                        {% if user.is_authenticated %}
+                            <div class="alert alert-warning">
+                                {% trans "Votre compte n'a pas accès à cette page. Pour continuer, veuillez vous connecter avec un compte qui a accès." %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                {% trans 'Veuillez vous connecter pour voir cette page.' %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+
+                    <form method="post" action="{% url 'login' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">{% trans "Nom d'utilisateur" %}</label>
+                            <input type="text" name="username" class="form-control" id="id_username" 
+                                   autocomplete="username" required autofocus>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">{% trans 'Mot de passe' %}</label>
+                            <input type="password" name="password" class="form-control" 
+                                   id="id_password" autocomplete="current-password" required>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                {% trans 'Se connecter' %}
+                            </button>
+                            <input type="hidden" name="next" value="{{ next }}">
+                        </div>
+                    </form>
+                    
+                    <div class="mt-3 text-center">
+                        <p class="mb-1">
+                            <a href="{% url 'password_reset' %}">
+                                {% trans 'Mot de passe oublié ?' %}
+                            </a>
+                        </p>
+                        <p class="mb-0">
+                            {% trans "Pas encore de compte ?" %}
+                            <a href="{% url 'authentification' %}">
+                                {% trans "S'inscrire" %}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Ajout des attributs autocomplete manquants pour éviter les avertissements
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('id_username').setAttribute('autocomplete', 'username');
+        document.getElementById('id_password').setAttribute('autocomplete', 'current-password');
+    });
+</script>
+{% endblock %}

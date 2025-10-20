@@ -1,0 +1,466 @@
+{% extends 'cahier_charges/base.html' %}
+{% load i18n %}
+
+{% block title %}Formulaire - {{ type_projet_display }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h3 class="mb-0 d-flex align-items-center">
+                        <i class="fas fa-edit me-3"></i>
+                        <div>
+                            <div>Cahier de charges - {{ type_projet_display }}</div>
+                            <small class="opacity-75">Remplissez tous les champs requis</small>
+                        </div>
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Erreurs détectées :</strong>
+                            <ul class="mb-0 mt-2">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate id="cahierForm">
+                        {% csrf_token %}
+                        
+                        <!-- Section Informations générales -->
+                        <div class="section-header">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>Informations générales
+                            </h5>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.nom_projet.id_for_label }}" class="form-label required">
+                                    <strong>Nom du projet</strong>
+                                </label>
+                                {{ form.nom_projet }}
+                                <div class="invalid-feedback"></div>
+                                {% if form.nom_projet.errors %}
+                                    <div class="text-danger small mt-1">{{ form.nom_projet.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if form.budget.field.widget.input_type != 'hidden' %}
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.budget.id_for_label }}" class="form-label">
+                                    <i class="fas fa-euro-sign me-1"></i>Budget estimé
+                                </label>
+                                {{ form.budget }}
+                                <div class="form-text">Budget en euros (optionnel)</div>
+                                {% if form.budget.errors %}
+                                    <div class="text-danger small mt-1">{{ form.budget.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="{{ form.description.id_for_label }}" class="form-label required">
+                                <strong>Description du projet</strong>
+                            </label>
+                            {{ form.description }}
+                            <div class="form-text">Décrivez votre projet de manière détaillée</div>
+                            {% if form.description.errors %}
+                                <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.delai.field.widget.input_type != 'hidden' %}
+                        <div class="mb-4">
+                            <label for="{{ form.delai.id_for_label }}" class="form-label">
+                                <i class="fas fa-clock me-1"></i>Délai souhaité
+                            </label>
+                            {{ form.delai }}
+                            <div class="form-text">Délai de réalisation souhaité</div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Champs spécifiques selon le type de projet -->
+                        {% if form.fonctionnalites.field.widget.input_type != 'hidden' or form.technologies.field.widget.input_type != 'hidden' %}
+                        <div class="section-header mt-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-cogs me-2"></i>Spécifications techniques
+                            </h5>
+                        </div>
+
+                        {% if form.fonctionnalites.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.fonctionnalites.id_for_label }}" class="form-label">
+                                <i class="fas fa-list me-1"></i>Fonctionnalités souhaitées
+                            </label>
+                            {{ form.fonctionnalites }}
+                            <div class="form-text">Listez les principales fonctionnalités</div>
+                        </div>
+                        {% endif %}
+
+                        {% if form.technologies.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.technologies.id_for_label }}" class="form-label">
+                                <i class="fas fa-code me-1"></i>Technologies préférées
+                            </label>
+                            {{ form.technologies }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.public_cible.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.public_cible.id_for_label }}" class="form-label">
+                                <i class="fas fa-users me-1"></i>Public cible
+                            </label>
+                            {{ form.public_cible }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.contraintes_techniques.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.contraintes_techniques.id_for_label }}" class="form-label">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Contraintes techniques
+                            </label>
+                            {{ form.contraintes_techniques }}
+                        </div>
+                        {% endif %}
+                        {% endif %}
+
+                        <!-- Champs spécifiques à l'IA -->
+                        {% if form.type_ia.field.widget.input_type != 'hidden' or form.donnees_requises.field.widget.input_type != 'hidden' %}
+                        <div class="section-header mt-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-brain me-2"></i>Spécifications IA
+                            </h5>
+                        </div>
+
+                        {% if form.type_ia.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.type_ia.id_for_label }}" class="form-label">Type d'IA</label>
+                            {{ form.type_ia }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.donnees_requises.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.donnees_requises.id_for_label }}" class="form-label">Données requises</label>
+                            {{ form.donnees_requises }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.performance_attendue.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.performance_attendue.id_for_label }}" class="form-label">Performance attendue</label>
+                            {{ form.performance_attendue }}
+                        </div>
+                        {% endif %}
+                        {% endif %}
+
+                        <!-- Champs spécifiques au mariage -->
+                        {% if form.date_mariage.field.widget.input_type != 'hidden' %}
+                        <div class="section-header mt-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-heart me-2"></i>Détails du mariage
+                            </h5>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_mariage.id_for_label }}" class="form-label">Date du mariage</label>
+                                {{ form.date_mariage }}
+                            </div>
+                            
+                            {% if form.nombre_invites.field.widget.input_type != 'hidden' %}
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.nombre_invites.id_for_label }}" class="form-label">Nombre d'invités</label>
+                                {{ form.nombre_invites }}
+                                {% if form.nombre_invites.errors %}
+                                    <div class="text-danger small mt-1">{{ form.nombre_invites.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.lieu_mariage.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.lieu_mariage.id_for_label }}" class="form-label">Lieu du mariage</label>
+                            {{ form.lieu_mariage }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.style_mariage.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.style_mariage.id_for_label }}" class="form-label">Style de mariage</label>
+                            {{ form.style_mariage }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.services_requis.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.services_requis.id_for_label }}" class="form-label">Services requis</label>
+                            {{ form.services_requis }}
+                        </div>
+                        {% endif %}
+                        {% endif %}
+
+                        <!-- Champs spécifiques à la construction -->
+                        {% if form.type_construction.field.widget.input_type != 'hidden' %}
+                        <div class="section-header mt-4">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-hammer me-2"></i>Détails de construction
+                            </h5>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.type_construction.id_for_label }}" class="form-label">Type de construction</label>
+                                {{ form.type_construction }}
+                            </div>
+                            
+                            {% if form.surface.field.widget.input_type != 'hidden' %}
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.surface.id_for_label }}" class="form-label">Surface</label>
+                                {{ form.surface }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if form.localisation.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.localisation.id_for_label }}" class="form-label">Localisation</label>
+                            {{ form.localisation }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.materiaux.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.materiaux.id_for_label }}" class="form-label">Matériaux</label>
+                            {{ form.materiaux }}
+                        </div>
+                        {% endif %}
+
+                        {% if form.normes.field.widget.input_type != 'hidden' %}
+                        <div class="mb-3">
+                            <label for="{{ form.normes.id_for_label }}" class="form-label">Normes et réglementations</label>
+                            {{ form.normes }}
+                        </div>
+                        {% endif %}
+                        {% endif %}
+
+                        {{ form.type_projet }}
+
+                        <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                            <a href="{% url 'index' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Retour
+                            </a>
+                            <button type="submit" class="btn btn-custom btn-lg" id="submitBtn">
+                                <i class="fas fa-check me-2"></i>Créer le cahier de charges
+                                <span class="spinner-border spinner-border-sm ms-2 d-none" role="status"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.section-header {
+    border-left: 4px solid #667eea;
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+    transform: translateY(-1px);
+}
+
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.form-label.required::after {
+    content: " *";
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.form-text {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+.btn-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.invalid-feedback {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .card-body {
+        padding: 20px !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('cahierForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = submitBtn.querySelector('.spinner-border');
+    
+    // Validation en temps réel
+    const requiredFields = form.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+        field.addEventListener('blur', validateField);
+        field.addEventListener('input', clearErrors);
+    });
+    
+    function validateField(e) {
+        const field = e.target;
+        const value = field.value.trim();
+        
+        clearFieldErrors(field);
+        
+        if (field.hasAttribute('required') && !value) {
+            showFieldError(field, 'Ce champ est requis');
+            return false;
+        }
+        
+        if (field.name === 'nom_projet' && value.length < 3 && value.length > 0) {
+            showFieldError(field, 'Le nom doit contenir au moins 3 caractères');
+            return false;
+        }
+        
+        if (field.type === 'number' && value < 0) {
+            showFieldError(field, 'La valeur ne peut pas être négative');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    function clearErrors(e) {
+        clearFieldErrors(e.target);
+    }
+    
+    function showFieldError(field, message) {
+        field.classList.add('is-invalid');
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = message;
+        }
+    }
+    
+    function clearFieldErrors(field) {
+        field.classList.remove('is-invalid');
+        const feedback = field.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.textContent = '';
+        }
+    }
+    
+    // Soumission du formulaire
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!validateField({target: field})) {
+                isValid = false;
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            const firstError = form.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({behavior: 'smooth', block: 'center'});
+                firstError.focus();
+            }
+            return;
+        }
+        
+        // Animation de chargement
+        submitBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Création en cours...';
+    });
+    
+    // Compteur de caractères pour les textarea
+    const textareas = form.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        const counter = document.createElement('div');
+        counter.className = 'character-counter text-muted small text-end mt-1';
+        textarea.parentNode.appendChild(counter);
+        
+        function updateCounter() {
+            const length = textarea.value.length;
+            counter.textContent = `${length} caractères`;
+        }
+        
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+    });
+});
+</script>
+{% endblock %}

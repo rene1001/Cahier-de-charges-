@@ -1,0 +1,108 @@
+{% extends 'cahier_charges/base.html' %}
+{% load static %}
+
+{% block title %}Choisir un type de projet{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Nouveau cahier des charges</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Choisissez un type de projet</h5>
+                    <p class="card-text">Sélectionnez le type de projet pour lequel vous souhaitez créer un cahier des charges.</p>
+                    
+                    <div class="row g-4 mt-3">
+                        {% for value, label in types_projet %}
+                        <div class="col-md-6">
+                            <a href="{% url 'creer_cahier_type' value %}" class="text-decoration-none">
+                                <div class="card h-100 border-primary">
+                                    <div class="card-body text-center">
+                                        {% if value == 'site_web' %}
+                                            <i class="fas fa-globe fa-3x text-primary mb-3"></i>
+                                        {% elif value == 'app_mobile' %}
+                                            <i class="fas fa-mobile-alt fa-3x text-primary mb-3"></i>
+                                        {% elif value == 'ia' %}
+                                            <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                                        {% elif value == 'mariage' %}
+                                            <i class="fas fa-ring fa-3x text-primary mb-3"></i>
+                                        {% elif value == 'construction' %}
+                                            <i class="fas fa-home fa-3x text-primary mb-3"></i>
+                                        {% else %}
+                                            <i class="fas fa-file-alt fa-3x text-primary mb-3"></i>
+                                        {% endif %}
+                                        <h5 class="card-title">{{ label }}</h5>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <a href="{% url 'mes_cahiers' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à mes cahiers
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Vérifier la limite de création de cahiers avant de rediriger
+$(document).ready(function() {
+    $('a[href^="/cahier/nouveau/"]').on('click', function(e) {
+        e.preventDefault();
+        const url = $(this).attr('href');
+        
+        // Afficher un indicateur de chargement
+        const $btn = $(this);
+        const originalHtml = $btn.html();
+        $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Vérification...');
+        
+        // Vérifier la limite de création de cahiers
+        $.ajax({
+            url: '{% url "verifier_limite_cahiers" %}',
+            method: 'GET',
+            success: function(response) {
+                if (response.peut_creer) {
+                    window.location.href = url;
+                } else {
+                    // Afficher un message d'erreur
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Limite atteinte',
+                        html: response.message + '<br><br>Voulez-vous mettre à jour votre abonnement ?',
+                        showCancelButton: true,
+                        confirmButtonText: 'Voir les offres',
+                        cancelButtonText: 'Plus tard',
+                        confirmButtonColor: '#0d6efd',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{% url "choix_abonnement" %}';
+                        }
+                    });
+                }
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erreur',
+                    text: 'Une erreur est survenue lors de la vérification de votre limite.'
+                });
+            },
+            complete: function() {
+                $btn.html(originalHtml);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

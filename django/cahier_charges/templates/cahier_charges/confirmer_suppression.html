@@ -1,0 +1,76 @@
+{% extends 'cahier_charges/base.html' %}
+{% load i18n %}
+
+{% block title %}Confirmer la suppression - {{ cahier.nom_projet }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if not abonnement %}
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading"><i class="fas fa-exclamation-circle me-2"></i>Abonnement requis</h5>
+                        <p class="mb-0">
+                            Vous devez avoir un abonnement actif pour gérer vos cahiers de charges.
+                            <a href="{% url 'choix_abonnement' %}" class="alert-link">Cliquez ici pour voir nos offres</a>.
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="alert {% if not abonnement %}alert-warning{% else %}alert-danger{% endif %}">
+                        <h5 class="alert-heading">
+                            <i class="fas {% if not abonnement %}fa-exclamation-triangle{% else %}fa-trash-alt{% endif %} me-2"></i>
+                            {% if not abonnement %}Attention !{% else %}Confirmez la suppression{% endif %}
+                        </h5>
+                        <p>Vous êtes sur le point de supprimer définitivement le cahier de charges suivant :</p>
+                        <ul class="mb-0">
+                            <li><strong>Nom du projet :</strong> {{ cahier.nom_projet }}</li>
+                            <li><strong>Type de projet :</strong> {{ cahier.get_type_projet_display }}</li>
+                            <li><strong>Date de création :</strong> {{ cahier.date_creation|date:"d/m/Y à H:i" }}</li>
+                        </ul>
+                        
+                        {% if not abonnement %}
+                        <hr>
+                        <p class="mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            La suppression des cahiers est une fonctionnalité réservée aux abonnés.
+                        </p>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="mb-4">
+                        <i class="fas fa-info-circle text-danger me-2"></i>
+                        Cette action est irréversible. Êtes-vous sûr de vouloir continuer ?
+                    </p>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'mes_cahiers' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i> Annuler
+                        </a>
+                        
+                        {% if abonnement or user.is_superuser %}
+                        <form method="post" action="{% url 'supprimer_cahier' cahier.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt me-1"></i> Confirmer la suppression
+                            </button>
+                        </form>
+                        {% else %}
+                        <a href="{% url 'choix_abonnement' %}" class="btn btn-success">
+                            <i class="fas fa-crown me-1"></i> Voir les offres
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

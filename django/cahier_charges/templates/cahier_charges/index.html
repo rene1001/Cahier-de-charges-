@@ -1,0 +1,129 @@
+
+{% extends 'cahier_charges/base.html' %}
+{% load i18n %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">
+            <i class="fas fa-magic me-3"></i>Générateur de Cahiers de Charges
+        </h1>
+        <p class="lead mb-5">Créez facilement des cahiers de charges professionnels pour tous vos projets</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="mb-4">Choisissez le type de projet</h2>
+            <p class="text-muted">Sélectionnez le type de cahier de charges que vous souhaitez créer</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 card-hover border-0 shadow">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-globe fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Site Web</h5>
+                    <p class="card-text text-muted">Créez un cahier de charges pour le développement de votre site web</p>
+                    <a href="{% url 'formulaire' 'site_web' %}" class="btn btn-custom">
+                        <i class="fas fa-arrow-right me-2"></i>Commencer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 card-hover border-0 shadow">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-mobile-alt fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">Application Mobile</h5>
+                    <p class="card-text text-muted">Définissez les spécifications de votre application mobile</p>
+                    <a href="{% url 'formulaire' 'app_mobile' %}" class="btn btn-custom">
+                        <i class="fas fa-arrow-right me-2"></i>Commencer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 card-hover border-0 shadow">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-brain fa-3x text-info"></i>
+                    </div>
+                    <h5 class="card-title">Intelligence Artificielle</h5>
+                    <p class="card-text text-muted">Spécifiez votre projet d'intelligence artificielle</p>
+                    <a href="{% url 'formulaire' 'ia' %}" class="btn btn-custom">
+                        <i class="fas fa-arrow-right me-2"></i>Commencer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 card-hover border-0 shadow">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-heart fa-3x text-danger"></i>
+                    </div>
+                    <h5 class="card-title">Mariage</h5>
+                    <p class="card-text text-muted">Organisez votre mariage avec un cahier de charges détaillé</p>
+                    <a href="{% url 'formulaire' 'mariage' %}" class="btn btn-custom">
+                        <i class="fas fa-arrow-right me-2"></i>Commencer
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 card-hover border-0 shadow">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-hammer fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="card-title">Construction</h5>
+                    <p class="card-text text-muted">Définissez les spécifications de votre chantier de construction</p>
+                    <a href="{% url 'formulaire' 'construction' %}" class="btn btn-custom">
+                        <i class="fas fa-arrow-right me-2"></i>Commencer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h3 class="mb-4">Comment ça marche ?</h3>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="mb-3">
+                        <i class="fas fa-mouse-pointer fa-2x text-primary"></i>
+                    </div>
+                    <h5>1. Choisissez</h5>
+                    <p class="text-muted">Sélectionnez le type de projet qui correspond à vos besoins</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="mb-3">
+                        <i class="fas fa-edit fa-2x text-success"></i>
+                    </div>
+                    <h5>2. Remplissez</h5>
+                    <p class="text-muted">Complétez le formulaire avec les détails de votre projet</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="mb-3">
+                        <i class="fas fa-download fa-2x text-info"></i>
+                    </div>
+                    <h5>3. Téléchargez</h5>
+                    <p class="text-muted">Obtenez votre cahier de charges en PDF professionnel</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

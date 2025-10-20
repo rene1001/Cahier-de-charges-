@@ -1,0 +1,209 @@
+{% extends 'cahier_charges/base.html' %}
+{% load i18n %}
+
+{% block title %}Mes Cahiers de Charges{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- En-tête avec informations d'abonnement -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2><i class="fas fa-folder-open me-2"></i>Mes Cahiers de Charges</h2>
+            {% if abonnement %}
+                <div class="alert alert-info">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Votre abonnement :</strong> {{ abonnement.plan.get_nom_display }}
+                            <span class="badge bg-{% if abonnement.statut == 'actif' %}success{% else %}warning{% endif %} ms-2">
+                                {{ abonnement.get_statut_display }}
+                            </span>
+                        </div>
+                        <a href="{% url 'tableau_de_bord' %}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-chart-line me-1"></i>Tableau de bord
+                        </a>
+                    </div>
+                    {% if not peut_creer_cahier %}
+                        <div class="alert alert-warning mt-2 mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Vous avez atteint la limite de votre forfait ce mois-ci.
+                            {% if abonnement.plan %}
+                                <a href="{% url 'choix_abonnement' %}" class="alert-link">Mettez à niveau votre abonnement</a> pour créer plus de cahiers.
+                            {% else %}
+                                <a href="{% url 'choix_abonnement' %}" class="alert-link">Passez à un forfait payant</a> pour créer plus de cahiers.
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <strong>Vous utilisez actuellement la version gratuite.</strong> Limité à 3 cahiers par mois.
+                        </div>
+                        <a href="{% url 'choix_abonnement' %}" class="btn btn-sm btn-success">
+                            <i class="fas fa-rocket me-1"></i>Découvrir les offres
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'creer_cahier' %}" class="btn btn-primary" id="nouveauCahierBtn">
+                <i class="fas fa-plus me-2"></i>Nouveau cahier
+            </a>
+            <a href="{% url 'tableau_de_bord' %}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-user me-1"></i>Mon compte
+            </a>
+        </div>
+    </div>
+
+    {% if cahiers %}
+        <div class="row">
+            {% for cahier in cahiers %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 card-hover shadow-sm">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if cahier.type_projet == 'site_web' %}
+                                    <i class="fas fa-globe text-primary"></i>
+                                {% elif cahier.type_projet == 'app_mobile' %}
+                                    <i class="fas fa-mobile-alt text-success"></i>
+                                {% elif cahier.type_projet == 'ia' %}
+                                    <i class="fas fa-brain text-info"></i>
+                                {% elif cahier.type_projet == 'mariage' %}
+                                    <i class="fas fa-heart text-danger"></i>
+                                {% elif cahier.type_projet == 'construction' %}
+                                    <i class="fas fa-hammer text-warning"></i>
+                                {% endif %}
+                                <span class="ms-2">{{ cahier.get_type_projet_display }}</span>
+                            </div>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-muted p-0" type="button" 
+                                        id="dropdownMenuButton{{ cahier.id }}" 
+                                        data-bs-toggle="dropdown" 
+                                        aria-expanded="false">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ cahier.id }}">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'preview' cahier.id %}">
+                                            <i class="fas fa-eye me-2"></i>Voir
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'generer_pdf' cahier.id %}">
+                                            <i class="fas fa-file-pdf me-2"></i>Télécharger PDF
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form action="{% url 'supprimer_cahier' cahier.id %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item text-danger" 
+                                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce cahier ? Cette action est irréversible.')">
+                                                <i class="fas fa-trash-alt me-2"></i>Supprimer
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ cahier.nom_projet }}</h5>
+                            
+                            <p class="card-text text-muted">
+                                {{ cahier.description|truncatewords:20|default:"Aucune description fournie" }}
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="far fa-calendar-alt me-1"></i>
+                                {{ cahier.date_creation|date:"d/m/Y" }}
+                            </small>
+                            {% if cahier.budget %}
+                                <small class="text-success fw-bold">
+                                    {{ cahier.budget }} €
+                                </small>
+                            {% endif %}
+                        </div>
+                        <div class="mt-2 d-flex gap-2 p-3 pt-0">
+                            <a href="{% url 'preview' cahier.id %}" class="btn btn-outline-primary btn-sm flex-fill">
+                                <i class="fas fa-eye me-1"></i>Voir
+                            </a>
+                            <a href="{% url 'generer_pdf' cahier.id %}" class="btn btn-custom btn-sm flex-fill">
+                                <i class="fas fa-download me-1"></i>PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-file-alt fa-4x text-muted mb-4"></i>
+            <h4 class="text-muted mb-3">Aucun cahier de charges créé</h4>
+            <p class="text-muted mb-4">Commencez par créer votre premier cahier de charges</p>
+            <a href="{% url 'creer_cahier' %}" class="btn btn-primary" id="premierCahierBtn">
+                <i class="fas fa-plus me-2"></i>Créer un cahier
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Vérifier la limite de création de cahiers avant de rediriger
+function verifierLimiteAvantCreation(event) {
+    event.preventDefault();
+    const url = $(this).attr('href');
+    
+    // Afficher un indicateur de chargement
+    const $btn = $(this);
+    const originalHtml = $btn.html();
+    $btn.html('<i class="fas fa-spinner fa-spin me-2"></i>Vérification...');
+    
+    // Vérifier la limite de création de cahiers
+    $.ajax({
+        url: '{% url "verifier_limite_cahiers" %}',
+        method: 'GET',
+        success: function(response) {
+            if (response.peut_creer) {
+                window.location.href = url;
+            } else {
+                // Afficher un message d'erreur
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Limite atteinte',
+                    html: response.message + '<br><br>Voulez-vous mettre à jour votre abonnement ?',
+                    showCancelButton: true,
+                    confirmButtonText: 'Voir les offres',
+                    cancelButtonText: 'Plus tard',
+                    confirmButtonColor: '#0d6efd',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '{% url "choix_abonnement" %}';
+                    }
+                });
+            }
+        },
+        error: function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Erreur',
+                text: 'Une erreur est survenue lors de la vérification de votre limite.'
+            });
+        },
+        complete: function() {
+            $btn.html(originalHtml);
+        }
+    });
+}
+
+$(document).ready(function() {
+    // Gérer le clic sur le bouton "Nouveau cahier"
+    $('#nouveauCahierBtn, #premierCahierBtn').on('click', verifierLimiteAvantCreation);
+});
+</script>
+{% endblock %}

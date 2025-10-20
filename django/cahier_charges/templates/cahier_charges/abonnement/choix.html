@@ -1,0 +1,207 @@
+{% extends 'cahier_charges/base.html' %}
+{% load static %}
+
+{% block title %}Choisissez votre abonnement{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-3">Choisissez votre abonnement</h1>
+        <p class="lead">Sélectionnez le forfait qui correspond le mieux à vos besoins</p>
+        
+        {% if abonnement_actuel %}
+        <div class="alert alert-info">
+            <h5>Votre abonnement actuel : <strong>{{ abonnement_actuel.plan.get_nom_display }}</strong></h5>
+            <p class="mb-0">Valide jusqu'au {{ abonnement_actuel.date_fin|date:"d/m/Y" }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center">
+        {% for plan in plans %}
+        <div class="col">
+            <div class="card mb-4 rounded-3 shadow-sm {% if plan.est_actuel %}border-primary border-2{% endif %}">
+                <div class="card-header py-3 {% if plan.est_actuel %}bg-primary text-white{% else %}bg-light{% endif %}">
+                    <h4 class="my-0 fw-normal">{{ plan.get_nom_display }}</h4>
+                    {% if plan.est_actuel %}
+                    <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-success">
+                        Actif
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">
+                        {% if plan.nom == 'gratuit' %}
+                            Gratuit
+                        {% else %}
+                            {% if plan.nom == 'pro_annuel' %}
+                                {{ plan.prix_annuel_usd|floatformat:0 }}<small class="text-muted fw-light">$/an</small>
+                                <div class="text-muted small mt-1">~{{ plan.get_prix_annuel_xof|floatformat:0 }} FCFA</div>
+                            {% else %}
+                                {{ plan.prix_mensuel_usd|floatformat:0 }}<small class="text-muted fw-light">$/mois</small>
+                                <div class="text-muted small mt-1">~{{ plan.get_prix_mensuel_xof|floatformat:0 }} FCFA</div>
+                            {% endif %}
+                        {% endif %}
+                    </h1>
+                    <ul class="list-unstyled mt-3 mb-4 text-start">
+                        <li class="mb-2">
+                            <i class="fas {% if plan.max_cahiers >= 3 or plan.max_cahiers == 0 %}fa-check text-success{% else %}fa-times text-muted{% endif %} me-2"></i>
+                            {% if plan.max_cahiers == 0 %}
+                                Cahiers illimités
+                            {% else %}
+                                Jusqu'à {{ plan.max_cahiers }} cahiers/mois
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas {% if plan.telechargement_pdf > 0 or plan.telechargement_pdf == 0 %}fa-check text-success{% else %}fa-times text-muted{% endif %} me-2"></i>
+                            {% if plan.telechargement_pdf == 0 %}
+                                Téléchargement PDF illimité
+                            {% elif plan.telechargement_pdf == -1 %}
+                                Prévisualisation uniquement
+                            {% else %}
+                                {{ plan.telechargement_pdf }} PDF téléchargeable(s)
+                            {% endif %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas {% if plan.partage_pdf %}fa-check text-success{% else %}fa-times text-muted{% endif %} me-2"></i>
+                            Partage par email
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas {% if plan.collaboration %}fa-check text-success{% else %}fa-times text-muted{% endif %} me-2"></i>
+                            Collaboration en équipe
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas {% if plan.historique_versions %}fa-check text-success{% else %}fa-times text-muted{% endif %} me-2"></i>
+                            Historique des versions
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas {% if plan.modeles_avances %}fa-check text-success{% else %}fa-times text-muted{% endif %} me-2"></i>
+                            Modèles premium
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-headset me-2"></i>
+                            {% if plan.support_premium %}
+                                Support premium (chat + email)
+                            {% elif plan.support_prioritaire %}
+                                Support prioritaire (email)
+                            {% else %}
+                                Support basique (email)
+                            {% endif %}
+                        </li>
+                    </ul>
+                    
+                    {% if plan.est_actuel %}
+                        <button type="button" class="w-100 btn btn-lg btn-outline-primary" disabled>
+                            <i class="fas fa-check-circle me-2"></i>Abonnement actuel
+                        </button>
+                    {% else %}
+                        {% if plan.nom == 'gratuit' %}
+                            <form method="post" action="{% url 'choix_abonnement' %}" class="mb-0">
+                                {% csrf_token %}
+                                <input type="hidden" name="nouveau_plan" value="{{ plan.id }}">
+                                <button type="submit" name="changer_abonnement" class="w-100 btn btn-lg btn-outline-primary">
+                                    <i class="fas fa-arrow-right me-2"></i>Commencer gratuitement
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{% url 'initier_paiement_ligdicash' plan.id %}" class="mb-0" onsubmit="return confirmerPaiement(this, '{{ plan.get_nom_display }}', '{{ plan.prix_mensuel_usd }}', '{{ plan.prix_annuel_usd }}', '{{ plan.nom }}')">
+                                {% csrf_token %}
+                                <button type="submit" class="w-100 btn btn-lg btn-primary">
+                                    <i class="fas fa-credit-card me-2"></i>Payer avec LigdiCash
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Questions fréquentes</h3>
+                    <div class="accordion mt-4" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    Puis-je changer de forfait à tout moment ?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Oui, vous pouvez changer de forfait à tout moment. Le changement prendra effet immédiatement et le montant sera ajusté au prorata pour le reste de la période de facturation.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    Comment fonctionne la période d'essai ?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    La version gratuite vous permet de créer jusqu'à 3 cahiers de charges par mois, avec la possibilité de télécharger 1 PDF. Aucune carte de crédit n'est requise pour commencer.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    Puis-je annuler à tout moment ?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Oui, vous pouvez annuler votre abonnement à tout moment. Vous conserverez l'accès aux fonctionnalités jusqu'à la fin de votre période de facturation en cours.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmerPaiement(form, nomPlan, prixMensuel, prixAnnuel, typePlan) {
+    // Déterminer le montant et la période
+    let montant, periode, montantXOF;
+    if (typePlan.includes('annuel')) {
+        montant = parseFloat(prixAnnuel);
+        periode = 'annuel';
+        montantXOF = Math.round(montant * 600); // Conversion approximative USD -> XOF
+    } else {
+        montant = parseFloat(prixMensuel);
+        periode = 'mensuel';
+        montantXOF = Math.round(montant * 600);
+    }
+    
+    // Message de confirmation
+    let message = `Vous allez etre redirige vers LigdiCash pour payer :\n\n` +
+                  `Plan : ${nomPlan}\n` +
+                  `Montant : ${montant}$ (~${montantXOF.toLocaleString()} FCFA)\n` +
+                  `Periode : ${periode}\n\n` +
+                  `Continuer vers le paiement ?`;
+    
+    // Afficher la confirmation
+    if (confirm(message)) {
+        // Ajouter un indicateur de chargement
+        const btn = form.querySelector('button[type="submit"]');
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Redirection...';
+        
+        // Permettre la soumission
+        return true;
+    }
+    
+    // Annuler la soumission
+    return false;
+}
+</script>
+{% endblock %}

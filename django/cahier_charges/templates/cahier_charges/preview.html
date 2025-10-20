@@ -1,0 +1,238 @@
+{% extends 'cahier_charges/base.html' %}
+{% load i18n %}
+
+{% block title %}Prévisualisation - {{ cahier.nom_projet }}{% endblock %}
+
+{% block content %}
+{% if not peut_generer_pdf %}
+<div class="container mt-3">
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        {% if abonnement and abonnement.plan.telechargement_pdf == 0 %}
+            Votre forfait actuel ne permet pas de télécharger de PDF.
+        {% elif abonnement and abonnement.plan.telechargement_pdf > 0 %}
+            Vous avez atteint la limite de {{ abonnement.plan.telechargement_pdf }} PDF pour ce mois-ci.
+        {% else %}
+            La version gratuite est limitée à 1 PDF par mois.
+        {% endif %}
+        <a href="{% url 'choix_abonnement' %}" class="alert-link">Mettez à niveau votre abonnement</a> pour plus de fonctionnalités.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+</div>
+{% endif %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">
+                        <i class="fas fa-eye me-2"></i>Prévisualisation du cahier de charges
+                    </h3>
+                    <div>
+                        {% if peut_generer_pdf %}
+                            <a href="{% url 'generer_pdf' cahier.id %}" class="btn btn-light btn-sm me-2" id="genererPdfBtn">
+                                <i class="fas fa-download me-1"></i>Télécharger PDF
+                            </a>
+                        {% else %}
+                            <button class="btn btn-light btn-sm me-2" disabled>
+                                <i class="fas fa-download me-1"></i>Télécharger PDF
+                            </button>
+                        {% endif %}
+                        <a href="{% url 'creer_cahier' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-plus me-1"></i>Nouveau
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="preview-content">
+                        <div class="text-center mb-4">
+                            <h1 class="display-5 text-primary">{{ cahier.nom_projet|upper }}</h1>
+                            <p class="text-muted">{{ cahier.get_type_projet_display }}</p>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="info-card p-3 bg-light rounded">
+                                    <h5 class="text-primary mb-3">Informations générales</h5>
+                                    <p><strong>Type de projet:</strong> {{ cahier.get_type_projet_display }}</p>
+                                    <p><strong>Date de création:</strong> {{ cahier.date_creation|date:"d/m/Y" }}</p>
+                                    {% if cahier.budget %}
+                                        <p><strong>Budget:</strong> {{ cahier.budget }} €</p>
+                                    {% endif %}
+                                    {% if cahier.delai %}
+                                        <p><strong>Délai:</strong> {{ cahier.delai }}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-card p-3 bg-light rounded">
+                                    <h5 class="text-primary mb-3">Description</h5>
+                                    <p>{{ cahier.description|linebreaks }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contenu spécifique selon le type de projet -->
+                        {% if cahier.type_projet == 'site_web' or cahier.type_projet == 'app_mobile' %}
+                            {% if cahier.fonctionnalites %}
+                                <div class="mb-4">
+                                    <h5 class="text-primary border-bottom pb-2">Fonctionnalités</h5>
+                                    <p>{{ cahier.fonctionnalites|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if cahier.technologies %}
+                                <div class="mb-4">
+                                    <h5 class="text-primary border-bottom pb-2">Technologies</h5>
+                                    <p>{{ cahier.technologies|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if cahier.public_cible %}
+                                <div class="mb-4">
+                                    <h5 class="text-primary border-bottom pb-2">Public cible</h5>
+                                    <p>{{ cahier.public_cible|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if cahier.contraintes_techniques %}
+                                <div class="mb-4">
+                                    <h5 class="text-primary border-bottom pb-2">Contraintes techniques</h5>
+                                    <p>{{ cahier.contraintes_techniques|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+
+                        {% elif cahier.type_projet == 'ia' %}
+                            {% if cahier.type_ia %}
+                                <div class="mb-4">
+                                    <h5 class="text-primary border-bottom pb-2">Type d'intelligence artificielle</h5>
+                                    <p>{{ cahier.type_ia|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if cahier.donnees_requises %}
+                                <div class="mb-4">
+                                    <h5 class="text-primary border-bottom pb-2">Données requises</h5>
+                                    <p>{{ cahier.donnees_requises|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            {% if cahier.performance_attendue %}
+                                <div class="mb-4">
+                                    <h5 class="text-primary border-bottom pb-2">Performance attendue</h5>
+                                    <p>{{ cahier.performance_attendue|linebreaks }}</p>
+                                </div>
+                            {% endif %}
+
+                        {% elif cahier.type_projet == 'mariage' %}
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="info-card p-3 bg-light rounded">
+                                        <h5 class="text-primary mb-3">Détails du mariage</h5>
+                                        {% if cahier.date_mariage %}
+                                            <p><strong>Date:</strong> {{ cahier.date_mariage|date:"d/m/Y" }}</p>
+                                        {% endif %}
+                                        {% if cahier.lieu_mariage %}
+                                            <p><strong>Lieu:</strong> {{ cahier.lieu_mariage }}</p>
+                                        {% endif %}
+                                        {% if cahier.nombre_invites %}
+                                            <p><strong>Nombre d'invités:</strong> {{ cahier.nombre_invites }}</p>
+                                        {% endif %}
+                                        {% if cahier.style_mariage %}
+                                            <p><strong>Style:</strong> {{ cahier.style_mariage }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if cahier.services_requis %}
+                                        <div class="info-card p-3 bg-light rounded">
+                                            <h5 class="text-primary mb-3">Services requis</h5>
+                                            <p>{{ cahier.services_requis|linebreaks }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        {% elif cahier.type_projet == 'construction' %}
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="info-card p-3 bg-light rounded">
+                                        <h5 class="text-primary mb-3">Détails de la construction</h5>
+                                        {% if cahier.type_construction %}
+                                            <p><strong>Type:</strong> {{ cahier.type_construction }}</p>
+                                        {% endif %}
+                                        {% if cahier.surface %}
+                                            <p><strong>Surface:</strong> {{ cahier.surface }}</p>
+                                        {% endif %}
+                                        {% if cahier.localisation %}
+                                            <p><strong>Localisation:</strong> {{ cahier.localisation }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if cahier.materiaux %}
+                                        <div class="info-card p-3 bg-light rounded mb-3">
+                                            <h5 class="text-primary mb-3">Matériaux</h5>
+                                            <p>{{ cahier.materiaux|linebreaks }}</p>
+                                        </div>
+                                    {% endif %}
+                                    {% if cahier.normes %}
+                                        <div class="info-card p-3 bg-light rounded">
+                                            <h5 class="text-primary mb-3">Normes</h5>
+                                            <p>{{ cahier.normes|linebreaks }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="text-center mt-5">
+                            <a href="{% url 'generer_pdf' cahier.id %}" class="btn btn-custom btn-lg me-3">
+                                <i class="fas fa-file-pdf me-2"></i>Générer le PDF
+                            </a>
+                            <a href="{% url 'index' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-plus me-2"></i>Créer un nouveau cahier
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid #0d6efd;
+}
+
+.info-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.preview-content {
+    line-height: 1.8;
+}
+
+.preview-content h5 {
+    color: #0d6efd;
+}
+</style>
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Gérer le clic sur le bouton de génération de PDF
+    $('#genererPdfBtn').on('click', function(e) {
+        const $btn = $(this);
+        const originalHtml = $btn.html();
+        $btn.html('<i class="fas fa-spinner fa-spin me-1"></i>Génération...');
+        
+        // Laisser la redirection se faire normalement
+        // La vérification des limites se fera côté serveur
+    });
+});
+</script>
+{% endblock %}
